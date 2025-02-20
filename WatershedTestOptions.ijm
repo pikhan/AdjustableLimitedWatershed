@@ -1,5 +1,6 @@
 // Adjustable Watershed Macro with EDM modifications
 
+// Create a dialog for user inputs
 Dialog.create("Adjustable Watershed Options");
 Dialog.addMessage("Adjustable Watershed with EDM modifications");
 Dialog.addNumber("Tolerance (e.g., 0.625):", 0.625); // Default tolerance
@@ -9,15 +10,18 @@ Dialog.addNumber("Max Watershed Line Length (e.g., 50 pixels):", 50); // Max len
 Dialog.addCheckbox("Restrict flooding to black regions:", false);
 Dialog.show();
 
+// Retrieve user inputs
 tolerance = Dialog.getNumber(); // Watershed sensitivity
 edmThreshold = Dialog.getNumber(); // Threshold to exclude white areas
 smoothingSigma = Dialog.getNumber(); // Smoothing for EDM
 maxLineLength = Dialog.getNumber(); // Max length for watershed lines
 restrictToBlack = Dialog.getCheckbox(); // Restrict flooding to black pixels
 
+// Ensure an image is open and duplicate the original image
 originalTitle = getTitle(); // Save the name of the original image
 run("Duplicate...", "title=Original_Copy"); // Explicitly duplicate the image and name it "Original_Copy"
 
+// Ensure the image is binary
 selectImage(originalTitle); // Work on the original image
 if (isBinary()) {
     print("Image is binary. Proceeding with segmentation...");
@@ -28,6 +32,7 @@ if (isBinary()) {
     //print("Image converted to binary.");
 }
 
+// Generate EDM
 run("Invert");
 //run("Distance Map", "map=[32 bits]"); // Generate EDM as a 32-bit image
 //rename("EDM");
@@ -53,10 +58,12 @@ if (edmThreshold > 0) {
     run("Apply LUT");
 }
 
+// Apply Gaussian Smoothing if required
 if (smoothingSigma > 0) {
     run("Gaussian Blur...", "sigma=" + smoothingSigma);
 }
 
+// Detect Maxima with the specified tolerance
 //run("Find Maxima...", "prominence=" + tolerance + " output=[Segmented Particles] exclude edges=false useEDM=true");
 //rename("Segmented_Particles"); // Rename the result for clarity
 //
@@ -97,6 +104,7 @@ if (maxLineLength > 0){
 }
 
 
+// Restrict flooding to black regions
 if (restrictToBlack) {
     selectImage("EDM");
     setAutoThreshold("Default"); // Apply an automatic threshold
@@ -106,6 +114,7 @@ if (restrictToBlack) {
     rename("Restricted_Segmented_Particles");
 }
 
+// Overlay Segmentation Lines as Black Pixels
 if (restrictToBlack) {
     selectImage("Restricted_Segmented_Particles");
 } else {
@@ -126,6 +135,7 @@ if (restrictToBlack) {
 }
 rename("Overlay_Result"); // Rename the overlay result
 
+// Convert to Binary and Display Final Result
 //run("Convert to Mask");
 //rename("Segmented_Result");
 
